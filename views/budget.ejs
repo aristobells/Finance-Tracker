@@ -1,0 +1,145 @@
+<%- include('partials/header', {title: 'Budget Management - Finance Tracker'}) %>
+<%- include('partials/navbar', {activePage: 'budget', user: user}) %>
+
+<div class="main-content budget-page">
+    <div class="budget-header">
+        <h1>Budget Management</h1>
+    </div>
+
+    <!-- Budget Form -->
+    <div class="form-container">
+        <h2><%= editing ? 'Edit Budget' : 'Create New Budget' %></h2>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <span><%= error %></span>
+            </div>
+        <% } %>
+        
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="success-message">
+                <i class="fas fa-check-circle"></i>
+                <span><%= success %></span>
+            </div>
+        <% } %>
+
+        <form class="budget-form" action="<%= editing ? '/budgets/edit/' + budget.id  + '?_method=PUT': '/budgets/add' %>" method="POST">
+            <div class="form-group">
+                <label for="category_id">Category</label>
+                <select id="category_id" name="category_id">
+                    <option value="">Overall Budget (All Categories)</option>
+                    <% categories.forEach(category => { %>
+                        <option value="<%= category.id %>" 
+                                <%= budget && budget.category_id == category.id ? 'selected' : '' %>>
+                            <%= category.name %>
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">Budget Amount (₦)</label>
+                <input 
+                    type="number" 
+                    id="amount" 
+                    name="amount" 
+                    step="0.01" 
+                    min="0.01" 
+                    value="<%= budget ? budget.amount : '' %>" 
+                    required
+                    placeholder="0.00"
+                >
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="period_start">Period Start</label>
+                    <input 
+                        type="date" 
+                        id="period_start" 
+                        name="period_start" 
+                        value="<%= budget && budget.period_start ? new Date(budget.period_start).toISOString().split('T')[0] : '' %>" 
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="period_end">Period End</label>
+                    <input 
+                        type="date" 
+                        id="period_end" 
+                        name="period_end" 
+                        value="<%= budget && budget.period_end ? new Date(budget.period_end).toISOString().split('T')[0] : '' %>" 
+                        required
+                    >
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <%= editing ? 'Update Budget' : 'Create Budget' %>
+                </button>
+                <a href="/budgets" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default dates if not editing
+         if (!editing) {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            document.getElementById('period_start').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('period_end').value = lastDay.toISOString().split('T')[0];
+       } 
+        
+        // Form validation
+        const form = document.querySelector('.budget-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const amount = document.getElementById('amount');
+                const periodStart = document.getElementById('period_start');
+                const periodEnd = document.getElementById('period_end');
+                
+                if (!amount.value || !periodStart.value || !periodEnd.value) {
+                    e.preventDefault();
+                    
+                    if (!amount.value) amount.classList.add('error');
+                    if (!periodStart.value) periodStart.classList.add('error');
+                    if (!periodEnd.value) periodEnd.classList.add('error');
+                    
+                    alert('Please fill in all required fields');
+                }
+                
+                // Validate that end date is after start date
+                if (periodStart.value && periodEnd.value) {
+                    const start = new Date(periodStart.value);
+                    const end = new Date(periodEnd.value);
+                    
+                    if (end <= start) {
+                        e.preventDefault();
+                        periodEnd.classList.add('error');
+                        alert('End date must be after start date');
+                    }
+                }
+            });
+            
+            // Clear error when user starts typing
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('error')) {
+                        this.classList.remove('error');
+                    }
+                });
+            });
+        }
+    });
+</script>

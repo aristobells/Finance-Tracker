@@ -1,0 +1,97 @@
+<%- include('partials/header', {title: 'My Budgets - Finance Tracker'}) %>
+<%- include('partials/navbar', {activePage: 'budgets', user: user}) %>
+
+<div class="main-content budgets-page">
+    <div class="budgets-header">
+        <h1>My Budgets</h1>
+        <a href="/budgets/add" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create New Budget
+        </a>
+    </div>
+
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="success-message">
+            <i class="fas fa-check-circle"></i>
+            <span><%= success %></span>
+        </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            <span><%= error %></span>
+        </div>
+    <% } %>
+
+    <div class="budgets-container">
+        <% if (budgets && budgets.length > 0) { %>
+            <% budgets.forEach(budget => { %>
+                <div class="budget-card">
+                    <div class="budget-header">
+                        <h3 class="budget-title">
+                            <%= budget.category_name || 'Overall Budget' %>
+                        </h3>
+                        <span class="budget-amount">
+                            ₦<%= budget.amount ? parseFloat(budget.amount).toFixed(2) : '0.00' %>
+                        </span>
+                    </div>
+                    
+                    <div class="budget-period">
+                        <i class="fas fa-calendar"></i>
+                        <%= budget.period_start ? new Date(budget.period_start).toLocaleDateString() : '' %> - 
+                        <%= budget.period_end ? new Date(budget.period_end).toLocaleDateString() : '' %>
+                    </div>
+
+                    <% if (budget.progress) { %>
+                        <div class="budget-progress">
+                            <div class="progress-info">
+                                <div class="progress-stats">
+                                    <span class="spent">Spent: ₦<%= budget.progress.spent.toFixed(2) %></span>
+                                    <span class="remaining">Remaining: ₦<%= budget.progress.remaining.toFixed(2) %></span>
+                                </div>
+                                <span class="percentage"><%= budget.progress.percent_used %>% used</span>
+                            </div>
+                            
+                            <div class="progress-bar">
+                                <div class="progress-fill 
+                                    <%= budget.progress.percent_used <= 70 
+                                        ? 'low' 
+                                        : budget.progress.percent_used <= 90 
+                                            ? 'medium' 
+                                            : 'high' %>"
+                                    style="width: <%= Math.min(budget.progress.percent_used, 100) %>%">
+                                </div>
+
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="progress-loading">
+                            <p>Loading progress...</p>
+                        </div>
+                    <% } %>
+
+                    <div class="budget-actions">
+                        <a href="/budgets/edit/<%= budget.id %>" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form action="/budgets/delete/<%= budget.id %>?_method=DELETE" method="POST" class="delete-form">
+                            <button type="submit" class="btn btn-danger btn-sm" 
+                                    onclick="return confirm('Are you sure you want to delete this budget?')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="empty-state">
+                <i class="fas fa-chart-pie"></i>
+                <h3>No Budgets Yet</h3>
+                <p>Create your first budget to start tracking your spending limits.</p>
+                <a href="/budgets/add" class="btn btn-primary">Create Budget</a>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

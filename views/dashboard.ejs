@@ -1,0 +1,249 @@
+<%- include('partials/header', {title: 'Dashboard - Finance Tracker'}) %>
+<%- include('partials/navbar', {activePage: 'dashboard'}) %> 
+
+<div class="main-content">
+    <div class="dashboard-header">
+        <h1>Financial Dashboard</h1>
+        <div class="date-filter">
+            <select id="periodSelect">
+                <option value="month">Monthly</option>
+                <option value="week">This Week</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card income">
+            <div class="card-icon">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="card-content">
+                <h3>Total Income</h3>
+               <p class="amount">₦<%= summary.all_time.total_income.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+
+                <p class="trend positive">+2.5% from last month</p>
+            </div>
+        </div>
+
+        <div class="summary-card expense">
+            <div class="card-icon">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="card-content">
+                <h3>Total Expenses</h3>
+                <p class="amount">₦<%= summary.all_time.total_expenses.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+                <p class="trend negative">-1.2% from last month</p>
+            </div>
+        </div>
+
+        <div class="summary-card balance">
+            <div class="card-icon">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <div class="card-content">
+                <h3>Current Balance</h3>
+                <p class="amount">₦<%= summary.all_time.balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
+                <p class="trend positive">+₦250 from last month</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Transactions -->
+    <div class="dashboard-grid">
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Income vs Expenses</h3>
+                <select id="chartType">
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                    <option value="doughnut">Doughnut Chart</option>
+                    <option value="stacked">Stacked Bar</option>
+                    <option value="radar">Radar Chart</option>
+                </select>
+            </div>
+            <canvas id="incomeExpenseChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Spending by Category</h3>
+            </div>
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="recent-transactions">
+        <div class="section-header">
+            <h2>Recent Transactions</h2>
+            <a href="/transactions/add" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Transaction
+            </a>
+        </div>
+
+        <% if (transactions && transactions.length > 0) { %>
+            <div class="transactions-table">
+                <div class="table-header">
+                    <div class="col-date">Date</div>
+                    <div class="col-description">Description</div>
+                    <div class="col-category">Category</div>
+                    <div class="col-amount">Amount</div>
+                    <div class="col-actions">Actions</div>
+                </div>
+                
+                <% transactions.slice(0, 6).forEach(transaction => { %>
+                    <div class="table-row <%= transaction.type %>">
+                        <div class="col-date">
+                            <%= new Date(transaction.date).toISOString().split("T")[0] %>
+                        </div>
+                        <div class="col-description">
+                            <%= transaction.description %>
+                        </div>
+                        <div class="col-category">
+                            <span class="category-badge"><%= transaction.category_name %></span>
+                        </div>
+                        <div class="col-amount">
+                            <span class="amount <%= transaction.type %>">
+                                <%= transaction.type === 'income' ? '+' : '-' %>₦<%= Number(transaction.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>
+                            </span>
+                        </div>
+                        <div class="col-actions">
+                            <a href="/transactions/edit/<%= transaction.id %>" class="action-btn edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="/transactions/delete/<%= transaction.id %>" method="POST" class="delete-form">
+                                <button type="submit" class="action-btn delete" >
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <i class="fas fa-receipt"></i>
+                <h3>No transactions yet</h3>
+                <p>Start tracking your finances by adding your first transaction</p>
+                <a href="/transactions/add" class="btn btn-primary">Add Transaction</a>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="report-data" type="application/json"><%- JSON.stringify(report) %></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const report = JSON.parse(document.getElementById('report-data').textContent);
+
+  const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+  const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+
+  let incomeExpenseChart, categoryChart;
+  let currentType = 'bar'; 
+
+  const months   = report?.monthly?.months || report?.monthly?.month || [];
+  const incomes  = (report?.monthly?.income  || []).map(Number);
+  const expenses = (report?.monthly?.expenses || []).map(Number);
+
+  function createIncomeExpenseChart(type) {
+    let chartData;
+    let chartOptions = {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: {}
+    };
+
+    if (type === 'bar' || type === 'line' || type === 'stacked') {
+      chartData = {
+        labels: months,
+        datasets: [
+          {
+            label: 'Income',
+            data: incomes,
+            backgroundColor: '#2ecc71',
+            borderColor: '#27ae60',
+            borderWidth: 1
+          },
+          {
+            label: 'Expenses',
+            data: expenses,
+            backgroundColor: '#e74c3c',
+            borderColor: '#c0392b',
+            borderWidth: 1
+          }
+        ]
+      };
+
+      if (type === 'stacked') {
+        type = 'bar';
+        chartOptions.scales = {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true }
+        };
+      } else {
+        chartOptions.scales = { y: { beginAtZero: true } };
+      }
+
+    } else if (type === 'pie' || type === 'doughnut') {
+      chartData = {
+        labels: ['Income', 'Expenses'],
+        datasets: [{
+          data: [
+            report?.incomeExpense?.income || 0,
+            report?.incomeExpense?.expense || 0
+          ],
+          backgroundColor: ['#2ecc71', '#e74c3c'],
+          borderColor: ['#27ae60', '#c0392b'],
+          borderWidth: 1
+        }]
+      };
+    }
+
+    return new Chart(incomeExpenseCtx, { type, data: chartData, options: chartOptions });
+  }
+
+  function createCategoryChart(categoriesObj) {
+    const labels = Object.keys(categoriesObj || {});
+    const values = Object.values(categoriesObj || {}).map(Number);
+
+    return new Chart(categoryCtx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: [
+            '#3498db', '#2ecc71', '#e74c3c',
+            '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#95a5a6'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  // Init
+  incomeExpenseChart = createIncomeExpenseChart(currentType);
+  categoryChart = createCategoryChart(report?.categories || {});
+
+  // Chart type switcher
+  const typeSelect = document.getElementById('chartType');
+  if (typeSelect) {
+    typeSelect.addEventListener('change', function () {
+      currentType = this.value;
+      if (incomeExpenseChart) incomeExpenseChart.destroy();
+      incomeExpenseChart = createIncomeExpenseChart(currentType);
+    });
+  }
+});
+</script>

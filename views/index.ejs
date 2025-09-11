@@ -1,0 +1,76 @@
+<%- include('partials/header', {title: 'Finance Tracker - Manage Your Money'}) %>
+
+<div class="home-container">
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>Take Control of Your Finances</h1>
+            <p>Track expenses, visualize spending, and reach your financial goals with our intuitive finance tracker</p>
+            
+            <div class="cta-buttons">
+                <a href="/register" class="btn btn-primary btn-large">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </a>
+                <a href="/login" class="btn btn-secondary btn-large">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <i class="fas fa-chart-line"></i>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <h2>Why Choose Finance Tracker?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h3>Track Expenses</h3>
+                <p>Easily record and categorize your income and expenses</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h3>Visual Reports</h3>
+                <p>See your spending patterns with beautiful charts and graphs</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3>Set Goals</h3>
+                <p>Create and track financial goals to improve your money habits</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonial-section">
+        <h2>What Our Users Say</h2>
+        <div class="testimonial">
+            <div class="testimonial-content">
+                <p>"This app helped me save over $3,000 in just six months by showing me exactly where my money was going!"</p>
+                <div class="testimonial-author">
+                    <strong>Sarah Johnson</strong>
+                    <span>Teacher</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="final-cta">
+        <h2>Ready to Take Control of Your Finances?</h2>
+        <p>Join thousands of users who are already managing their money better</p>
+        <div class="cta-buttons">
+            <a href="/register" class="btn btn-primary btn-large">
+                Get Started Now
+            </a>
+        </div>
+    </section>
+</div>
+
+<%- include('partials/footer') %>
