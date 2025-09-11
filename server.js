@@ -46,7 +46,7 @@ app.post("/register", async (req, res) => {
    email, 
    password});
   //  console.log(txRes) 
-     res.render("auth/register.ejs", {message: txRes.data.message, error: null });
+     res.render("auth/login.ejs", {message: txRes.data.message, error: null });
   
  } catch (err) {
     console.error(err.response?.data || err.message);
@@ -304,22 +304,17 @@ app.get("/budgets/add", async (req, res) => {
     const token = req.cookies.token;
     const decoded = jwt.decode(token);
 
-    const [catRes, budgetRes ] = await Promise.all([
-      axios.get(`${API_URL}/transactions/categories`, {
+    const catRes = await    axios.get(`${API_URL}/transactions/categories`, {
       headers: { Authorization: `Bearer ${token}` },
-    }),
-     axios.get(`${API_URL}/budget/all`, {
-      headers : {"Authorization": `Bearer ${token}`}
     })
-    ]);
 
     const categories = catRes.data || [];
-    const budget = budgetRes.data
+    
     res.render("budget.ejs", { 
       categories, 
       user: decoded, 
       editing: false,
-      budget
+      budget: null
      });
   } catch (error) {
     console.error("Error rendering budget form:", error.message);
@@ -415,7 +410,7 @@ app.delete("/budgets/delete/:id", async (req, res)=>{
 app.get("/budgets", async (req,res)=> {
   try {
         const token = req.cookies.token;
-    const decoded = jwt.decode(token);
+        const decoded = jwt.decode(token);
     // get  user's budget
     const budgetRes = await axios.get(`${API_URL}/budget/all`, {
       headers : {"Authorization" : `Bearer ${token}`}
@@ -455,8 +450,13 @@ app.get("/budgets", async (req,res)=> {
         user: decoded
     });
   } catch (error) {
-    console.error("Error loading budgets:", error);
-    res.status(500).send("Server Error");
+    const token = req.cookies.token;
+    const decoded = jwt.decode(token);
+    console.error("Error loading budgets:", error.response?.data || error.message);
+    res.status(500).render("errorPage.ejs", {
+    user: decoded,
+    error: error.response?.data?.message || error.message || "Something went wrong"
+});
   }
 });
 
