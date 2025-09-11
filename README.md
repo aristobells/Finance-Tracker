@@ -15,9 +15,8 @@ A web application for tracking income, expenses, and generating financial report
    - [Running the Application](#running-the-application)  
 5. [Usage](#usage)  
 6. [Configuration](#configuration)  
-7. [Contributing](#contributing)  
-8. [License](#license)  
-9. [Contact](#contact)
+7. [Contributing](#contributing)   
+8. [Contact](#contact)
 
 ---
 
