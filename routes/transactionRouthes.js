@@ -21,7 +21,7 @@ router.post("/add", verifyToken, addTransaction);
 // add transaction
 router.get("/all", verifyToken,getAllUserTransactions);
 // delete logged-in user transaction
-router.delete("/:id", verifyToken,deleteTransaction);
+router.delete("/details/:id", verifyToken,deleteTransaction);
 // Edit transaction
 router.put("/edit/:id", verifyToken, editTransaction);
 // Filter and sort transaction

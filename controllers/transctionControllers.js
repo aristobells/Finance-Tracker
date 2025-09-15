@@ -46,7 +46,7 @@ ORDER BY t.date DESC;`, [req.user.id])
 export async function deleteTransaction(req,res) {
  try {
   const {id} = req.params;
-  console.log(id)
+  // console.log(id)
   const check = await db.query("SELECT * FROM transactions WHERE id = $1 AND user_id = $2 "
    , [id, req.user.id]);
 

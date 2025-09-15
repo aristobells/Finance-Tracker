@@ -6,20 +6,39 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken"
 import methodOverride from "method-override";
+import db from "./config/db.js";
 
-
+// Import API routes
+import authRoutes from './routes/authRoutes.js';
+import transactionsRouthes from "./routes/transactionRouthes.js";
+import userRouthes from "./routes/userRouthes.js";
+import settingsRouthes from "./routes/settingsRouthes.js";
+import budgetRouthes from "./routes/budgetRouthes.js";
 
 const app = express();
+const PORT = process.env.PORT || 4000
+app.use(cookieParser());
+
+// API Routes
+app.use(express.json());
+app.use('/api/auth', authRoutes);
+app.use('/api/transactions', transactionsRouthes);
+app.use("/api/userprofile", userRouthes);
+app.use("/api/user", settingsRouthes);
+app.use("/api/budget", budgetRouthes);
+
+
+
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.use(cookieParser());
 app.use(express.static("public"));
 
-const API_URL ="http://localhost:3000"
+const API_URL =`http://localhost:${PORT}/api`
 
 
 // Home page
@@ -65,7 +84,7 @@ app.post("/login", async (req, res)=> {
     const {email, password} = req.body;
     const response = await axios.post(`${API_URL}/auth/login`, {email, password});
     res.cookie("token", response.data.token, {httpOnly : true});
-
+    // console.log("Login response:", response.data);
     res.redirect("/dashboard");
 
   } catch (error) {
@@ -501,7 +520,7 @@ app.post("/change-password", async (req, res)=> {
 
 
 
-app.listen(4000, () => {
-  console.log(`🚀 Server running on Port 4000`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on Port ${PORT}`);
 });
 
