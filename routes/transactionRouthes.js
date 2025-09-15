@@ -46,7 +46,7 @@ router.get("/categories", verifyToken, getAllCategories);
 
 
 // get a single transaction: for some reason this route keeps affecting other routes, check later
-router.get("/:id", verifyToken, getTransactionById);
+router.get("/details/:id", verifyToken, getTransactionById);
 
 
 

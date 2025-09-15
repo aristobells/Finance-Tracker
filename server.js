@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken"
 import methodOverride from "method-override";
 
 
+
 const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -125,7 +126,7 @@ app.post("/transactions/delete/:id", async (req, res) => {
 try {
     const { id } = req.params;
     const token = req.cookies.token;
-   await axios.delete(`${API_URL}/transactions/${id}`, {
+   await axios.delete(`${API_URL}/transactions/details/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       } );
    console.log("Deleted sucessfully")    
@@ -147,7 +148,7 @@ async function renderTransactionPage(req, res, {transactionId, editing}) {
   });
   let transaction = null;
   if(transactionId){
-        const tranRes= await axios.get(`${API_URL}/transactions/${transactionId}`, {
+        const tranRes= await axios.get(`${API_URL}/transactions/details/${transactionId}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       transaction = tranRes.data      
@@ -460,6 +461,40 @@ app.get("/budgets", async (req,res)=> {
   }
 });
 
+// Change Password
+app.get("/change-password", async (req, res)=>{
+  const token = req.cookies.token
+  const decoded = jwt.decode(token)
+  // console.log(decoded)
+  res.render("settings.ejs", {user: decoded})
+})
+
+// post
+app.post("/change-password", async (req, res)=> {
+  try {
+      const token = req.cookies.token;
+      const decoded = jwt.decode(token);
+      const oldPassword = req.body.currentPassword;
+      const newPassword = req.body.newPassword;
+       await axios.put(`
+        ${API_URL}/userprofile/me/password`,
+        {oldPassword, newPassword},
+        { headers : {"Authorization" : `Bearer ${token}`}}
+      )
+      res.redirect("/login")
+
+      console.log(oldPassword)
+  } catch (error) {
+    const token = req.cookies.token;
+    const decoded = jwt.decode(token);
+    console.error("Error loading budgets:", error.response?.data || error.message);
+    res.render("settings.ejs", {user: decoded, error : error.response?.data?.message || "Something is wrong"})
+
+  }
+})
+
+
+
 
 
 
@@ -469,3 +504,4 @@ app.get("/budgets", async (req,res)=> {
 app.listen(4000, () => {
   console.log(`🚀 Server running on Port 4000`);
 });
+

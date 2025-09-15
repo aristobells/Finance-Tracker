@@ -1,7 +1,8 @@
-# Finance-Tracker
+📊 Finance Tracker
 
-A web application for tracking income, expenses, and generating financial reports. It aims to help users monitor and manage their personal finances through an intuitive interface.
+A full-stack Finance Tracker web application that helps users manage their incomes and expenses, categorize spending, and view monthly reports with visual charts.
 
+Built with Node.js, Express.js, PostgreSQL, and EJS, with Chart.js for frontend data visualization.
 ---
 
 ## Table of Contents

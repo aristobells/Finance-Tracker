@@ -6,13 +6,9 @@ router.post("/register", registerUser);
 // login route
 router.post("/login", loginUser);
 
-router.post("/request-password-reset", (req, res) => {
-  res.send("Reset route");
-});
 
-router.post("/verify-email", (req, res) => {
-  res.send("Verify email");
-});
+
+
 
 
 
