@@ -3,6 +3,7 @@
 A full-stack Finance Tracker web application that helps users manage their incomes and expenses, categorize spending, and view monthly reports with visual charts.
 
 Built with Node.js, Express.js, PostgreSQL, and EJS, with Chart.js for frontend data visualization.
+Live link: https://finance-tracker-x64r.onrender.com/
 ---
 
 ## Table of Contents
