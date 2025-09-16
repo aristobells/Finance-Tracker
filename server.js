@@ -14,6 +14,7 @@ import transactionsRouthes from "./routes/transactionRouthes.js";
 import userRouthes from "./routes/userRouthes.js";
 import settingsRouthes from "./routes/settingsRouthes.js";
 import budgetRouthes from "./routes/budgetRouthes.js";
+import { error } from "console";
 
 const app = express();
 const PORT = process.env.PORT || 4000
@@ -55,6 +56,13 @@ app.get("/register", async (req, res) => {
 app.get("/login", async (req, res)=>{
   res.render("auth/login.ejs");
 });
+
+// forgot password
+app.get("/fogot-password", (req, res)=>{
+  res.render("errorPage.ejs", {error: `🚧 This app is still under construction.
+Need help or want to change your password? Contact the admin at ariestobells@gmail.com
+.`})
+})
 
 //  Registeration
 app.post("/register", async (req, res) => {
