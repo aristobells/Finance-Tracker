@@ -111,6 +111,7 @@ app.get("/logout", (req, res) => {
 app.get("/dashboard", async (req, res) => {
   try {
     const token = req.cookies.token;
+    if(!token) return res.redirect("/login")
     const decoded = jwt.decode(token)
 
     const [summaryRes, transRes, expenseByCatRes, incomeVsExpenseRes, report] = await Promise.all([
@@ -191,10 +192,14 @@ async function renderTransactionPage(req, res, {transactionId, editing}) {
 }
 
 app.get("/transactions/add", (req, res) => {
+  const token = req.cookies.token
+  if(!token) return res.redirect("/login")
   renderTransactionPage(req, res, {transactionId: null, editing: false });
 });
 
 app.get("/transactions/edit/:id", (req, res) => {
+  const token = req.cookies.token
+  if(!token) return res.redirect("/login")
   renderTransactionPage(req, res, { transactionId: req.params.id, editing: true });
 });
 
@@ -251,7 +256,9 @@ app.put("/transactions/edit/:id", async (req,res)=> {
 
 app.get("/alltranscations", async (req, res)=> {
   try {
-    const {
+    const token = req.cookies.token
+    if(!token) return res.redirect("/login")
+        const {
             startDate,
             endDate,
             type,
@@ -260,7 +267,7 @@ app.get("/alltranscations", async (req, res)=> {
             page = 1,
             limit = 10
         } = req.query;
-
+        
       // query string for API call
       let queryString = `?page=${page}&limit=${limit}&sort=${sort}`;
       if (startDate) queryString += `&startDate=${startDate}`;
@@ -281,8 +288,9 @@ app.get("/alltranscations", async (req, res)=> {
             }
         });
 
+        
         const categories =  catRes.data || [];
-        const token = req.cookies.token;
+        // const token = req.cookies.token;
          const decoded = jwt.decode(token)
 
 
@@ -320,6 +328,7 @@ app.get("/alltranscations", async (req, res)=> {
 // Report routes
 app.get("/reports", (req, res)=>{
   const token =req.cookies.token
+  if(!token) return res.redirect("/login")
   const decoded  = jwt.decode(token)
 
   res.render("report.ejs", {user : decoded})
@@ -331,7 +340,6 @@ app.get("/budgets/add", async (req, res) => {
   try {
     const token = req.cookies.token;
     if(!token) return res.redirect("/login")
-
        // safer: verify instead of just decode
     let decoded;
     try {
@@ -355,11 +363,12 @@ app.get("/budgets/add", async (req, res) => {
   } catch (error) {
     console.error("Error rendering budget form:", error.response?.data?.message || error.message);
     // res.status(500).send("Failed to load budget form");
+      const token = req.cookies.token;
+      const decoded = jwt.decode(token)
      res.status(500).render("errorPage.ejs", {
     user: decoded,
     error: error.response?.data?.message || error.message || "Something went wrong"
 });
-    res
   }
 });
 
@@ -385,6 +394,7 @@ app.get("/budgets/edit/:id", async (req, res) => {
   try {
     const {id} = req.params;
     const token = req.cookies.token;
+    if(!token) return res.redirect("/login")
     const decoded = jwt.decode(token);
 
     const [catRes, budgetRes ] = await Promise.all([
@@ -451,6 +461,7 @@ app.delete("/budgets/delete/:id", async (req, res)=>{
 app.get("/budgets", async (req,res)=> {
   try {
         const token = req.cookies.token;
+        if(!token) return res.redirect("/login")
         const decoded = jwt.decode(token);
     // get  user's budget
     const budgetRes = await axios.get(`${API_URL}/budget/all`, {
