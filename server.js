@@ -330,7 +330,15 @@ app.get("/reports", (req, res)=>{
 app.get("/budgets/add", async (req, res) => {
   try {
     const token = req.cookies.token;
-    const decoded = jwt.decode(token);
+    if(!token) return res.redirect("/login")
+
+       // safer: verify instead of just decode
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.redirect("/login"); // token invalid or expired
+    }
 
     const catRes = await    axios.get(`${API_URL}/transactions/categories`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -345,8 +353,13 @@ app.get("/budgets/add", async (req, res) => {
       budget: null
      });
   } catch (error) {
-    console.error("Error rendering budget form:", error.message);
-    res.status(500).send("Failed to load budget form");
+    console.error("Error rendering budget form:", error.response?.data?.message || error.message);
+    // res.status(500).send("Failed to load budget form");
+     res.status(500).render("errorPage.ejs", {
+    user: decoded,
+    error: error.response?.data?.message || error.message || "Something went wrong"
+});
+    res
   }
 });
 
@@ -514,7 +527,7 @@ app.post("/change-password", async (req, res)=> {
   } catch (error) {
     const token = req.cookies.token;
     const decoded = jwt.decode(token);
-    console.error("Error loading budgets:", error.response?.data || error.message);
+    console.error("Error changing password:", error.response?.data || error.message);
     res.render("settings.ejs", {user: decoded, error : error.response?.data?.message || "Something is wrong"})
 
   }
